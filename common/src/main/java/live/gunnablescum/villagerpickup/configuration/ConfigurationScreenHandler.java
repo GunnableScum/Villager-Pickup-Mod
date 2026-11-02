@@ -36,7 +36,7 @@ public class ConfigurationScreenHandler extends ChestMenu {
         for (int i = 0; i < content.length; i++) {
             #if MC_26_1
             content[i] = Items.LIGHT_GRAY_STAINED_GLASS_PANE.getDefaultInstance();
-            #elif MC_26_2
+            #elif MC_26_2 || MC_26_3
             content[i] = Items.STAINED_GLASS_PANE.lightGray().getDefaultInstance();
             #endif
             DataComponentPatch.Builder changes = DataComponentPatch.builder();
