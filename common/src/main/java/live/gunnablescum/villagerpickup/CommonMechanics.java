@@ -20,11 +20,6 @@ import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.TagValueOutput;
-#if MC_26_1
-import net.minecraft.world.entity.EntityType;
-#elif MC_26_2
-import net.minecraft.world.entity.EntityTypes;
-#endif
 
 import java.util.List;
 import java.util.Optional;
@@ -35,9 +30,9 @@ public class CommonMechanics {
         if(!ConfigurationHandler.getBoolean("enable_villager_pickup")) return InteractionResult.PASS; // If the mod is disabled, don't do anything.
 
         #if MC_26_1
-        if(entity.getType() != EntityType.VILLAGER) return InteractionResult.PASS; // Don't do anything if it's not a villager.
-        #elif MC_26_2
-        if(entity.getType() != EntityTypes.VILLAGER) return InteractionResult.PASS; // Don't do anything if it's not a villager.
+        if(entity.getType() != net.minecraft.world.entity.EntityType.VILLAGER) return InteractionResult.PASS; // Don't do anything if it's not a villager.
+        #elif MC_26_2 || MC_26_3
+        if(entity.getType() != net.minecraft.world.entity.EntityTypes.VILLAGER) return InteractionResult.PASS; // Don't do anything if it's not a villager.
         #endif
 
         if(player.level().isClientSide()) return InteractionResult.SUCCESS_SERVER; // Don't process anything on the client side, show the client that their interaction has been acknowledged.
@@ -48,8 +43,14 @@ public class CommonMechanics {
 
         if(spawnEgg == null) return InteractionResult.PASS; // There isn't a Villager Spawn Egg sometimes for some reason.
 
-        if(player.getInventory().getFreeSlot() != 1) player.getInventory().add(spawnEgg);
-        else player.drop(spawnEgg, true);
+        if(player.getInventory().getFreeSlot() != -1) player.getInventory().add(spawnEgg);
+        else {
+            #if MC_26_1 || MC_26_2
+            player.drop(spawnEgg, true);
+            #elif MC_26_3
+            player.drop(spawnEgg, true, net.minecraft.util.Prediction.SERVER_ONLY);
+            #endif
+        }
         return InteractionResult.SUCCESS;
     }
 
@@ -68,11 +69,11 @@ public class CommonMechanics {
 
         nbt.discard("sleeping_pos");
         #if MC_26_1
-        nbt.putString("id", EntityType.VILLAGER.getDescriptionId());
-        Optional<Holder<Item>> spawnEgg = SpawnEggItem.byId(EntityType.VILLAGER);
-        #elif MC_26_2
-        nbt.putString("id", EntityTypes.VILLAGER.getDescriptionId());
-        Optional<Holder<Item>> spawnEgg = SpawnEggItem.byId(EntityTypes.VILLAGER);
+        nbt.putString("id", net.minecraft.world.entity.EntityType.VILLAGER.getDescriptionId());
+        Optional<Holder<Item>> spawnEgg = SpawnEggItem.byId(net.minecraft.world.entity.EntityType.VILLAGER);
+        #elif MC_26_2 || MC_26_3
+        nbt.putString("id", net.minecraft.world.entity.EntityTypes.VILLAGER.getDescriptionId());
+        Optional<Holder<Item>> spawnEgg = SpawnEggItem.byId(net.minecraft.world.entity.EntityTypes.VILLAGER);
         #endif
 
         if(spawnEgg.isEmpty()) return null;
@@ -83,9 +84,9 @@ public class CommonMechanics {
 
         DataComponentPatch.Builder changes = DataComponentPatch.builder()
                 #if MC_26_1
-                .set(DataComponents.ENTITY_DATA, TypedEntityData.of(EntityType.VILLAGER, nbt.buildResult()))
-                #elif MC_26_2
-                        .set(DataComponents.ENTITY_DATA, TypedEntityData.of(EntityTypes.VILLAGER, nbt.buildResult()))
+                .set(DataComponents.ENTITY_DATA, TypedEntityData.of(net.minecraft.world.entity.EntityType.VILLAGER, nbt.buildResult()))
+                #elif MC_26_2 || MC_26_3
+                .set(DataComponents.ENTITY_DATA, TypedEntityData.of(net.minecraft.world.entity.EntityTypes.VILLAGER, nbt.buildResult()))
                 #endif
                 .set(DataComponents.LORE, loreData);
 
